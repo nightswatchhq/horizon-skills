@@ -1,11 +1,11 @@
 {
-  "name": "lodestone",
+  "name": "horizon-skills",
   "version": "0.1.0",
-  "description": "The ore the fleet's instruments are born from. Forge a complete Graph Horizon data service from a short spec — contract, gateway, config, Docker, deploy script, tests. Proxy and pipeline archetypes, built on horizon-core.",
+  "description": "Claude Code skills for The Graph's Horizon framework. Scaffold a complete data service from a short spec — contract, gateway, config, Docker, deploy script, tests. Proxy and pipeline archetypes, built on horizon-core.",
   "author": {
     "name": "lodestar-team"
   },
-  "homepage": "https://github.com/lodestar-team/lodestone",
+  "homepage": "https://github.com/lodestar-team/horizon-skills",
   "license": "Apache-2.0",
   "keywords": [
     "the-graph",

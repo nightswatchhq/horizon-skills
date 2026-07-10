@@ -42,7 +42,7 @@ ABI is identical for every Horizon data service; `horizon-core`'s collector is f
   `ProvisionManager` the helper is a modifier; the function form exists only in some later
   (Camp-era) forks. Using the function against 1.1.0 fails with "Undeclared identifier".
 - **`IGraphTallyCollector` / `IGraphPayments` import path.** Either
-  `@graphprotocol/interfaces/contracts/horizon/IGraphTallyCollector.sol` (the form lodestone
+  `@graphprotocol/interfaces/contracts/horizon/IGraphTallyCollector.sol` (the form horizon-skills
   uses) or `@graphprotocol/horizon/interfaces/IGraphTallyCollector.sol` works, given the
   remappings above. NOT `horizon/payments/`. Wrong path → "file not found".
 - **`IGraphToken is IERC20`** — so `_graphToken().balanceOf(...)` / `.transfer(...)` /
@@ -78,7 +78,7 @@ need more. Use these when hand-extending a generated gateway:
 - **Per-endpoint pricing** — `pricing::PricingPolicy` (`FlatPricing` default,
   `FnPricing(closure)`). Inject via `run_with(config, policy, extra_routes)` or
   `AppState::with_pricing`. Enforced in the proxy + `proxy::gate_request`: underpaid
-  receipts → 402. lodestone emits this when `pricing: true` (see `pricing-overlay`).
+  receipts → 402. horizon-skills emits this when `pricing: true` (see `pricing-overlay`).
 - **Composable router** — `router_with(state, extra: Router<AppState>)` merges custom
   routes (e.g. a WebSocket relay) alongside the rate-limited proxy. `run_with` / `run_state`
   serve them. Custom routes reuse the receipt pipeline via `proxy::gate_request(&state,

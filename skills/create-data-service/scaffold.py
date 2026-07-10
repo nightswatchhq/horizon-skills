@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Lodestone — Horizon data service generator.
+"""horizon-skills — Horizon data service generator.
 
 Reads an answers JSON file, fills the template tree, and writes a complete,
 buildable data service repo. See SKILL.md for the answers schema.
@@ -166,7 +166,7 @@ def main() -> None:
 
     written = sorted(set(written))
     priced = " +pricing" if subs["pricing"] else ""
-    print(f"Lodestone — forged {subs['service_title']} ({subs['network']}, {subs['archetype']}{priced}) at {out}\n")
+    print(f"horizon-skills — generated {subs['service_title']} ({subs['network']}, {subs['archetype']}{priced}) at {out}\n")
     for p in written:
         print(f"  {p.relative_to(out)}")
     print(f"\n{len(written)} files. Next: vendor contract libs, fill .env + gateway.toml, "

@@ -1,7 +1,7 @@
 # horizon-ds-mcp
 
 A [Model Context Protocol](https://modelcontextprotocol.io) server for **operating
-Graph Horizon data services** — the companion to the [lodestone](../README.md) generator.
+Graph Horizon data services** — the companion to the [horizon-skills](../README.md) generator.
 Point an MCP client (Claude Desktop/Code, Cursor) at it and inspect or run a deployed
 DataService in natural language.
 
