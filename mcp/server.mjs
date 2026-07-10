@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * horizon-ds-mcp — a Model Context Protocol server for OPERATING Graph Horizon
- * data services (the kind lodestone generates).
+ * data services (the kind horizon-skills generates).
  *
  * Lets an MCP client inspect and (optionally) operate a deployed DataService:
  * read its economics, a provider's registration + active tiers, a consumer's
@@ -34,7 +34,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-// ── Network presets (see lodestone reference/gotchas.md) ──────────────────────────
+// ── Network presets (see horizon-skills reference/gotchas.md) ──────────────────────────
 const NETWORKS = {
   arbitrum_sepolia: {
     chainId: 421614,
