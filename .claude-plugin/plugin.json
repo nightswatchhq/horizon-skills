@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "Claude Code skills for The Graph's Horizon framework. Scaffold a complete data service from a short spec — contract, gateway, config, Docker, deploy script, tests. Proxy and pipeline archetypes, built on horizon-core.",
   "author": {
-    "name": "lodestar-team"
+    "name": "nightswatchhq"
   },
-  "homepage": "https://github.com/lodestar-team/horizon-skills",
+  "homepage": "https://github.com/nightswatchhq/horizon-skills",
   "license": "Apache-2.0",
   "keywords": [
     "the-graph",

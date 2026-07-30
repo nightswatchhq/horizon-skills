@@ -59,7 +59,7 @@ ABI is identical for every Horizon data service; `horizon-core`'s collector is f
 
 ## horizon-core (proxy archetype) notes
 
-- Dependency: `horizon-core = { git = "https://github.com/lodestar-team/horizon-core", branch = "main" }`.
+- Dependency: `horizon-core = { git = "https://github.com/nightswatchhq/horizon-core", branch = "main" }`.
   Consider pinning a tag/rev for reproducibility once core stabilises.
 - The whole gateway is `horizon_core::run(Config::load()?)`. Config path comes from
   `$GATEWAY_CONFIG` (defaults to `gateway.toml`).
