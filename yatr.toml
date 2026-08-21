@@ -48,7 +48,7 @@ sources = ["mcp/server.mjs"]
 desc = "Install the MCP server's dependencies from the lockfile"
 run = ["npm ci"]
 cwd = "mcp"
-sources = ["mcp/package.json", "mcp/package-lock.json"]
+sources = ["package.json", "package-lock.json"]
 
 [tasks.links]
 desc = "Fail if a relative markdown link points at a file that is not there"
