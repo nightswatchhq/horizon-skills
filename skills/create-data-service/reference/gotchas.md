@@ -15,6 +15,24 @@ The EIP-712 domain for TAP receipts is always `name = "GraphTallyCollector"`, `c
 42161` (Arbitrum One) — the gateway config defaults to these. The `collect(address,uint8,bytes)`
 ABI is identical for every Horizon data service; `horizon-core`'s collector is fully generic.
 
+## If your service settles recurring payments, the documented pin will not work (2026-08-28)
+
+`RecurringCollector` — the right instrument for anything billed as a subscription rather than per
+request (DIPS indexing agreements, chain integrations) — **does not exist at the
+`@graphprotocol/horizon@1.1.0` commit pinned below**. Use `graphprotocol/contracts` at
+`2629e6463f6474f076396a32f51c9799490ea503` (main, 2026-08-28), which has
+`IRecurringCollector.sol` *and* still has the `packages/horizon/contracts/data-service/` layout,
+so the remappings below hold.
+
+Two API changes come with that newer ref, and both are silent until the compiler stops you:
+
+- **`onlyAuthorizedForProvision(sp)` is gone**, replaced by a plain
+  `_requireAuthorizedForProvision(sp)` call as the first line of the function body.
+- **`IDataService` no longer declares `deregister`**, so `override` on it fails with "function has
+  override specified but does not override anything". Declare it in your own interface instead.
+
+Worked example: `nightswatchhq/chain-integration-ds`.
+
 ## Contract dependency pinning (the big one — verified 2026-06-24)
 
 - **Pin `graphprotocol/contracts` to the `@graphprotocol/horizon@1.1.0` commit**
