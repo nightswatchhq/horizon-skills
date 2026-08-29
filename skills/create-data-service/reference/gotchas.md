@@ -33,6 +33,51 @@ Two API changes come with that newer ref, and both are silent until the compiler
 
 Worked example: `nightswatchhq/chain-integration-ds`.
 
+## A payer must authorize their own key before signing anything (2026-08-29)
+
+Verified against the deployed `RecurringCollector` on Arbitrum Sepolia
+(`0x0b18befc60455121ad66ae6e4a647955fcde3900`), not read off the source.
+
+`RecurringCollector.accept()` checks the payer's signature through `Authorizable._isAuthorized`:
+
+```solidity
+return (authorizer != address(0) &&
+    $.authorizations[signer].authorizer == authorizer &&
+    !$.authorizations[signer].revoked);
+```
+
+There is **no `signer == authorizer` special case**. A payer signing their own agreement with their
+own key recovers correctly, equals `rca.payer` exactly, and is still rejected, because
+`authorizations[payer]` is empty until somebody fills it in. The revert is
+`RecurringCollectorInvalidSigner()`, which blames the signature for a problem the signature does not
+have. This costs a day if you have not seen it.
+
+So before any RCA is signed, once per key:
+
+```solidity
+bytes32 messageHash = keccak256(
+    abi.encodePacked(block.chainid, address(collector), "authorizeSignerProof", proofDeadline, payer)
+);
+// eth_sign prefix, NOT EIP-712
+bytes memory proof = sign(payerKey, MessageHashUtils.toEthSignedMessageHash(messageHash));
+vm.prank(payer);
+collector.authorizeSigner(payer, proofDeadline, proof);
+```
+
+Note the two conventions in one contract: **the agreement is EIP-712, this proof is a plain
+`eth_sign`.** Producing the wrong one gives bytes the contract rejects without explaining why.
+
+`weaver authorize-proof` ([nightswatchhq/weaver](https://github.com/nightswatchhq/weaver)) emits the
+proof and the matching `cast send`.
+
+**And the meta-lesson, which is the more useful half.** This survived a run where every negative
+test passed, because they used bare `vm.expectRevert()`. A bare `expectRevert` accepts *any* revert,
+including the exact one the test exists to distinguish from. **Assert the specific selector**:
+
+```solidity
+vm.expectRevert(IRecurringCollector.RecurringCollectorInvalidSigner.selector);
+```
+
 ## Contract dependency pinning (the big one — verified 2026-06-24)
 
 - **Pin `graphprotocol/contracts` to the `@graphprotocol/horizon@1.1.0` commit**
