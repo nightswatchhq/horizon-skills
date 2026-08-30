@@ -128,9 +128,47 @@ Fix any breakage before handing back. Common failures are in `reference/gotchas.
 (remapping roots, `via_ir`, the `IGraphTallyCollector` import path, `deregister` not being
 `override`). Report the build result honestly — if `forge test` fails, say so with output.
 
+## Step 5b — Prove it can actually be paid
+
+**`forge test` against mocks does not establish that the service can be paid.** This step is not
+optional and it is the one most likely to be skipped, because everything is green without it.
+
+Two sibling services make the case. SDSCE rehearsed provision → register → collect against real
+Sepolia Horizon contracts on an anvil fork, reconciled to the token (10 GRT protocol tax + 9.9
+data-service cut + 980.1 to the provider = 1000 exactly, matched against the `totalSupply` delta),
+and its payment path is sound. `chain-integration-ds` had sixteen passing tests against a
+`MockRecurringCollector` and **could not be paid at all**: it never called `accept()`, which is
+callable only by the data service an agreement names, so no agreement written for it could ever be
+accepted by anyone. The mock returned a number and modelled no rule, so nothing failed.
+
+Write a fork test — or an anvil rehearsal script — that goes all the way to a balance changing:
+
+```solidity
+vm.createSelectFork(vm.envString("ARBITRUM_SEPOLIA_RPC_URL"));
+// ... then assert the service provider's GRT balance goes UP.
+```
+
+Four things that stop a collection, all of which cost a day each to find:
+
+1. **A provision is required before anyone is paid.** The collector checks
+   `getProviderTokensAvailable(serviceProvider, dataService) > 0` — the guard against a
+   signer-as-data-service draining escrow. `deal` the GRT, `stakeTo`, then `provision`.
+2. **`thawingPeriod` is capped at ~2,418,000 seconds.** 30 days is refused by a custom error
+   carrying two raw numbers and no name.
+3. **If you settle through `RecurringCollector`, the service needs its own `accept` path.** Only the
+   data service an agreement names may accept it — not the payer who signed it, not the provider who
+   benefits. A service without one can never be paid. This is the defect above.
+4. **Escrow is not a blocker on a fork.** "Needs funded escrow" is true of a broadcast only: `deal`
+   mints GRT and the deposit is an ordinary call.
+
+Negative tests assert **specific** revert selectors. A bare `vm.expectRevert()` passes for any
+reason at all, including the one the test exists to rule out.
+
 ## Step 6 — Hand off
 
 Tell the user what was generated and the exact next steps:
+0. Run the Step 5b rehearsal if it has not been run. A service that has never been paid on a fork
+   should not be deployed.
 1. Fill `.env` (PRIVATE_KEY, OWNER, PAUSE_GUARDIAN) and the gateway TOML (addresses, db).
 2. Deploy the contract to testnet (`forge script ... --broadcast`), note the proxy address.
 3. Put the proxy address into the gateway config's `tap.data_service_address`.
