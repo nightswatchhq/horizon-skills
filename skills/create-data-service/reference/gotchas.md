@@ -8,8 +8,29 @@ Hard-won lessons from building ~10 of these. Read before generating; consult whe
 |---|---|---|
 | GraphTallyCollector | `0x8f69F5C07477Ac46FBc491B1E6D91E2bb0111A9e` | `0xacC71844EF6beEF70106ABe6E51013189A1f3738` |
 | Controller | `cast call 0xb2Bb92d0DE618878E438b55D5846cfecD9301105 "controller()(address)"` | `0x9DB3ee191681f092607035d9BDA6e59FbEaCa695` |
-| HorizonStaking | `0x00669A4CF01450B64E8A2A20E9b1FCB71E61eF03` | `0xFf2Ee30de92F276018642A59Fb7Be95b3F9088Af` |
-| PaymentsEscrow | `0xf6Fcc27aAf1fcD8B254498c9794451d82afC673E` | `0x09B985a2042848A08bA59060EaF0f07c6F5D4d54` |
+| HorizonStaking | `0x00669A4CF01450B64E8A2A20E9b1FCB71E61eF03` | `0x865365C425f3A593Ffe698D9c4E6707D14d51e08` |
+| PaymentsEscrow | `0xf6Fcc27aAf1fcD8B254498c9794451d82afC673E` | `0x4b5D3Da463F7E076bb7CDF5030960bf123245681` |
+
+**Two Sepolia addresses in that table were implementations, not proxies, and were corrected on
+2026-08-30.** HorizonStaking was `0xFf2Ee30d…` (43,785 bytes) and PaymentsEscrow was `0x09B985a2…`
+(13,735 bytes); the Controller resolves them to `0x865365C4…` (4,571) and `0x4b5D3Da4…` (2,341).
+Mainnet was correct throughout, so this was Sepolia only.
+
+**The failure mode is why this matters more than a typo.** Calling an implementation directly does
+not revert. Its storage is uninitialised, so a view returns **zero** and a data service built against
+it reads zeros forever with nothing in any log to say why - the same shape as the dead Dispatch
+implementation that circulated for weeks. A wrong address here is invisible.
+
+**So resolve from the Controller rather than copying a table, including this one:**
+
+```sh
+cast call <controller> "getContractProxy(bytes32)(address)" $(cast keccak "PaymentsEscrow") --rpc-url <rpc>
+```
+
+Sepolia Controller `0x9DB3ee191681f092607035d9BDA6e59FbEaCa695`. Note the registry key for staking is
+**`Staking`**, not `HorizonStaking` - the latter resolves to the zero address, which is at least a
+loud failure. And a size check is a decent smell test: a Horizon proxy is ~2.3-4.6 KB, an
+implementation tens of KB.
 
 The EIP-712 domain for TAP receipts is always `name = "GraphTallyCollector"`, `chainId =
 42161` (Arbitrum One) — the gateway config defaults to these. The `collect(address,uint8,bytes)`
