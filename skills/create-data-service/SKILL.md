@@ -141,12 +141,32 @@ and its payment path is sound. `chain-integration-ds` had sixteen passing tests 
 callable only by the data service an agreement names, so no agreement written for it could ever be
 accepted by anyone. The mock returned a number and modelled no rule, so nothing failed.
 
-Write a fork test — or an anvil rehearsal script — that goes all the way to a balance changing:
+The scaffold ships `contracts/test/HorizonForkTest.sol` for this. Inherit it and write one test that
+ends with a balance going **up**:
 
 ```solidity
-vm.createSelectFork(vm.envString("ARBITRUM_SEPOLIA_RPC_URL"));
-// ... then assert the service provider's GRT balance goes UP.
+contract PaidTest is HorizonForkTest {
+    function setUp() public {
+        forkOrSkip();                                   // skips loudly with no RPC configured
+        // deploy your service, then:
+        provisionTo(provider, address(ds), 100_000 ether);
+        fundEscrow(payer, RECURRING_COLLECTOR, provider, 50_000 ether);
+        authorizeOwnSigner(RECURRING_COLLECTOR, payer, payerKey);
+    }
+
+    function test_itCanActuallyBePaid() public {
+        uint256 before = grtBalance(provider);
+        // ... accept, start, collect ...
+        assertGt(grtBalance(provider), before, "the provider was not paid");
+    }
+}
 ```
+
+The harness carries the four traps below so you do not rediscover them: Controller-resolved
+addresses with a proxy-versus-implementation size check, the signer authorisation, a provision at a
+thawing period the protocol will accept, and an escrow deposit. It was written by extracting three
+rehearsals that each re-derived the same setup, and it is exercised against deployed Sepolia
+contracts in `nightswatchhq/chain-integration-ds`.
 
 Four things that stop a collection, all of which cost a day each to find:
 
